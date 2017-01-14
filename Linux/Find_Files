@@ -1,0 +1,71 @@
+#!/usr/bin/env python2
+from __future__ import print_function
+import sys
+from subprocess import Popen, PIPE
+import argparse
+import re
+
+textchars = bytearray({7,8,9,10,12,13,27} | set(range(0x20, 0x100)) - {0x7f})
+is_binary_string = lambda bytes: bool(bytes.translate(None, textchars)) #credit J. Orpinel
+
+class bcolors:
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    
+if __name__ == "__main__": 
+    name = None
+    find = None
+
+    parser = argparse.ArgumentParser(description='Find files the easy way.\nExample: findfiles .cc \"class X\"\nThis will search for class X in all cc files.', formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('filename', type = str, nargs='?', default = None, help = 'pattern in file name')
+    parser.add_argument('content', type = str, nargs='?', default = None, help = 'pattern in file content')
+    parser.add_argument('-d', type = str, nargs='?', default = '.', help = 'directory to search', dest="dir")
+    parser.add_argument('--no-skip', dest='skip', action='store_false', help = 'By default, files are skipped: *svn*, *~')
+    parser.set_defaults(skip=True)
+
+    args = parser.parse_args()
+    
+    command = "find {dir}  -type f".format(dir=args.dir)
+    if args.filename != None:
+        command += "  -name \"*{n}*\"".format(n=args.filename)
+
+    proc1 = Popen(command, shell=True, stdout=PIPE)
+    out,err=proc1.communicate()
+
+    if out != None:
+        if args.content != None:
+            for iOut in out.splitlines(False):
+                if args.skip and ("svn" in iOut or "~" == iOut[-1]):
+                    continue
+                
+                isBinary = False
+                with open(iOut, "rb") as f:
+                    if is_binary_string(f.read(1024)):
+                        isBinary = True
+                        
+                with open(iOut, "r") as f:
+                    for line in f.readlines():
+                        if args.content in line:
+                            if isBinary:
+                                print(bcolors.GREEN + iOut + bcolors.ENDC + ":  Binary fails contains pattern.")
+                                continue #next file
+                            print(bcolors.GREEN + iOut + bcolors.ENDC, end=":  ")
+                            words =  re.split("("+args.content+")", line)
+                            for iWord in words:
+                                if args.content in iWord:
+                                    print(bcolors.RED + iWord + bcolors.ENDC, end="")
+                                else:
+                                    print(iWord, end="")
+        else: #no file content search set
+            for iOut in out.splitlines(False):
+                print(iOut)
+    
+
+    if err != None:
+        print("The following errors were returned:")
+        for i in err:
+            print(err)
