@@ -60,7 +60,7 @@ echo Now writing services to a file and searching for vulnerable services...
 net start > servicesstarted.txt
 echo This is only common services, not nessecarily going to catch 100%
 REM looks to see if remote registry is on
-net start | findstr Remote Registry
+net start | findstr /C:"Remote Registry"
 if %errorlevel%==0 (
 	echo Remote Registry is running!
 	echo Attempting to stop...
@@ -74,10 +74,11 @@ REM Remove all saved credentials
 cmdkey.exe /list > "%TEMP%\List.txt"
 findstr.exe Target "%TEMP%\List.txt" > "%TEMP%\tokensonly.txt"
 FOR /F "tokens=1,2 delims= " %%G IN (%TEMP%\tokensonly.txt) DO cmdkey.exe /delete:%%H
-del "%TEMP%\*.*" /s /f /q
 set SRVC_LIST=(RemoteAccess Telephony tlntsvr p2pimsvc simptcp fax msftpsvc)
-	for %%i in %HITHERE% do net stop %%i
-	for %%i in %HITHERE% sc config %%i start= disabled
+	for %%i in %SRVC_LIST% do net stop %%i
+	for %%i in %SRVC_LIST% do (
+		sc config %%i start= disabled
+	)
 netsh advfirewall firewall set rule name="Remote Assistance (DCOM-In)" new enable=no >NUL
 netsh advfirewall firewall set rule name="Remote Assistance (PNRP-In)" new enable=no >NUL
 netsh advfirewall firewall set rule name="Remote Assistance (RA Server TCP-In)" new enable=no >NUL
@@ -101,7 +102,7 @@ netsh advfirewall firewall add rule name="Cybergate" protocol=UDP dir=out remote
 netsh advfirewall firewall add rule name="Telnet" protocol=TCP dir=out remoteport=107 action=block
 netsh advfirewall firewall add rule name="Telnet" protocol=UDP dir=out remoteport=107 action=block
 netsh advfirewall firewall add rule name="FTP" protocol=TCP dir=out remoteport=115 action=block
-netsh advfirewall firewall add rule name="IRC" protocal=TCP dir=out remoteport=194 action=block
+netsh advfirewall firewall add rule name="IRC" protocol=TCP dir=out remoteport=194 action=block
 netsh advfirewall firewall add rule name="IRC" protocol=UDP dir=out remoteport=194 action=block
 netsh advfirewall firewall add rule name="RemoteProcessExecution" protocol=TCP dir=out remoteport=512 action=block
 netsh advfirewall firewall add rule name="RemoteShell" protocol=TCP dir=out remoteport=514 action=block
@@ -113,57 +114,9 @@ netsh advfirewall firewall add rule name="RemoteIBM" protocol=UDP dir=out remote
 netsh advfirewall firewall add rule name="RemoteAircrack" protocol=TCP dir=out remoteport=666 action=block
 netsh advfirewall firewall add rule name="NSF" protocol=UDP dir=out remoteport=944 action=block
 netsh advfirewall firewall add rule name="IPV6FTP" protocol=UDP dir=out remoteport=973 action=block
-dism /online /disable-feature /featurename:IIS-WebServerRole >NUL
-dism /online /disable-feature /featurename:IIS-WebServer >NUL
-dism /online /disable-feature /featurename:IIS-CommonHttpFeatures >NUL
-dism /online /disable-feature /featurename:IIS-HttpErrors >NUL
-dism /online /disable-feature /featurename:IIS-HttpRedirect >NUL
-dism /online /disable-feature /featurename:IIS-ApplicationDevelopment >NUL
-dism /online /disable-feature /featurename:IIS-NetFxExtensibility >NUL
-dism /online /disable-feature /featurename:IIS-NetFxExtensibility45 >NUL
-dism /online /disable-feature /featurename:IIS-HealthAndDiagnostics >NUL
-dism /online /disable-feature /featurename:IIS-HttpLogging >NUL
-dism /online /disable-feature /featurename:IIS-LoggingLibraries >NUL
-dism /online /disable-feature /featurename:IIS-RequestMonitor >NUL
-dism /online /disable-feature /featurename:IIS-HttpTracing >NUL
-dism /online /disable-feature /featurename:IIS-Security >NUL
-dism /online /disable-feature /featurename:IIS-URLAuthorization >NUL
-dism /online /disable-feature /featurename:IIS-RequestFiltering >NUL
-dism /online /disable-feature /featurename:IIS-IPSecurity >NUL
-dism /online /disable-feature /featurename:IIS-Performance >NUL
-dism /online /disable-feature /featurename:IIS-HttpCompressionDynamic >NUL
-dism /online /disable-feature /featurename:IIS-WebServerManagementTools >NUL
-dism /online /disable-feature /featurename:IIS-ManagementScriptingTools >NUL
-dism /online /disable-feature /featurename:IIS-IIS6ManagementCompatibility >NUL
-dism /online /disable-feature /featurename:IIS-Metabase >NUL
-dism /online /disable-feature /featurename:IIS-HostableWebCore >NUL
-dism /online /disable-feature /featurename:IIS-StaticContent >NUL
-dism /online /disable-feature /featurename:IIS-DefaultDocument >NUL
-dism /online /disable-feature /featurename:IIS-DirectoryBrowsing >NUL
-dism /online /disable-feature /featurename:IIS-WebDAV >NUL
-dism /online /disable-feature /featurename:IIS-WebSockets >NUL
-dism /online /disable-feature /featurename:IIS-ApplicationInit >NUL
-dism /online /disable-feature /featurename:IIS-ASPNET >NUL
-dism /online /disable-feature /featurename:IIS-ASPNET45 >NUL
-dism /online /disable-feature /featurename:IIS-ASP >NUL
-dism /online /disable-feature /featurename:IIS-CGI >NUL
-dism /online /disable-feature /featurename:IIS-ISAPIExtensions >NUL
-dism /online /disable-feature /featurename:IIS-ISAPIFilter >NUL
-dism /online /disable-feature /featurename:IIS-ServerSideIncludes >NUL
-dism /online /disable-feature /featurename:IIS-CustomLogging >NUL
-dism /online /disable-feature /featurename:IIS-BasicAuthentication >NUL
-dism /online /disable-feature /featurename:IIS-HttpCompressionStatic >NUL
-dism /online /disable-feature /featurename:IIS-ManagementConsole >NUL
-dism /online /disable-feature /featurename:IIS-ManagementService >NUL
-dism /online /disable-feature /featurename:IIS-WMICompatibility >NUL
-dism /online /disable-feature /featurename:IIS-LegacyScripts >NUL
-dism /online /disable-feature /featurename:IIS-LegacySnapIn >NUL
-dism /online /disable-feature /featurename:IIS-FTPServer >NUL
-dism /online /disable-feature /featurename:IIS-FTPSvc >NUL
-dism /online /disable-feature /featurename:IIS-FTPExtensibility >NUL
-dism /online /disable-feature /featurename:TFTP >NUL
-dism /online /disable-feature /featurename:TelnetClient >NUL
-dism /online /disable-feature /featurename:TelnetServer >NUL
+
+echo "Disabled features. On to registry."
+
 reg ADD "HKCU\Software\Microsoft\Internet Explorer\Main" /v DoNotTrack /t REG_DWORD /d 1 /f
 reg ADD "HKCU\Software\Microsoft\Internet Explorer\Download" /v RunInvalidSignatures /t REG_DWORD /d 1 /f
 reg ADD "HKCU\Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_LOCALMACHINE_LOCKDOWN\Settings" /v LOCALMACHINE_CD_UNLOCK /t REG_DWORD /d 1 /t
@@ -179,9 +132,9 @@ reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v Allocate
 REM Automatic Admin logon
 reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_DWORD /d 0 /f
 REM Logo message text
-reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v LegalNoticeText /t REG_SZ /d "Lol noobz pl0x don't hax, thx bae"
+reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v LegalNoticeText /t REG_SZ /d "I am a secure AI. Rarrr." /f
 REM Logon message title bar
-reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v LegalNoticeCaption /t REG_SZ /d "Dnt hax me"
+reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v LegalNoticeCaption /t REG_SZ /d "Dnt hax me" /f
 REM Wipe page file from shutdown
 reg ADD "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v ClearPageFileAtShutdown /t REG_DWORD /d 1 /f
 REM LOL this is a key? Disallow remote access to floppie disks
