@@ -19,17 +19,6 @@ tasklist /v >> %basedpath%\tasksreport.txt
 echo Tasks/Processes Report Compiled
 schtasks >> %basedpath%\scheduledtasksreport.txt
 echo Scheduled Tasks Report Compiled
-net users > %basedpath%\usersreport.txt
-(
-  for /F %%h in (%basedpath%\usersreport.txt) do (
-    net user %%h >NUL
-	if %errorlevel%==0 net user %%h >> %basedpath%\usersreport.txt 
-  )
-)
-echo. >> %basedpath%\usersreport.txt
-echo Below is the administrators group: >> %basedpath%\usersreport.txt
-net localgroup Administrators >> %basedpath%\usersreport.txt
-echo. >> %basedpath%\usersreport.txt
 echo Below is the account lockout policy
 net accounts >> %basedpath%\usersreport.txt
 echo Users Report Compiled
