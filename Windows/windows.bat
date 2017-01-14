@@ -425,3 +425,9 @@ powershell Invoke-WebRequest -OutFile MBRTKit.exe https://data-cdn.mbamupdates.c
 MBRTKit.exe
 goto MENU
 PAUSE
+
+
+
+
+
+New Script
