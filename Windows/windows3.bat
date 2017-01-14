@@ -46,7 +46,7 @@ findstr .avi users.flashed >NUL
 if %errorlevel%==0 where /r c:\Users\ *.avi >> media_video
 findstr .mpeg4 users.flashed >NUL
 if %errorlevel%==0 where /r c:\Users\ .mpeg4 >> media_video
-REM BREAKLINE
+
 findstr .gif users.flashed >NUL
 if %errorlevel%==0 where /r c:\Users\ *.gif >> media_pics
 findstr .png users.flashed >NUL
@@ -57,9 +57,7 @@ findstr .jpg users.flashed >NUL
 if %errorlevel%==0 where /r c:\Users\ .jpg >> media_pics
 findstr .jpeg users.flashed >NUL
 if %errorlevel%==0 where /r c:\Users\ .jpeg >> media_pics
-C:\WINDOWS\system32\notepad.exe media_video
-C:\WINDOWS\system32\notepad.exe media_audio
-C:\WINDOWS\system32\notepad.exe media_pics
+
 echo Finding Hacktools now...
 findstr "Cain" programfiles.flashed
 if %errorlevel%==0 (
@@ -91,4 +89,5 @@ echo Potential Metasploit framework detected. Please take note, then press any k
 pause >NUL
 )
 cls
+echo Done!
 pause
